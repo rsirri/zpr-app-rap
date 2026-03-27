@@ -1,0 +1,35 @@
+{
+  "formatVersion": "2",
+  "header": {
+    "description": "An SAP Fiori application.",
+    "originalLanguage": "en",
+    "abapLanguageVersion": "cloudDevelopment"
+  },
+  "generalInformation": {
+    "appType": "ui5",
+    "catalogId": "SAP_TC_UI5_REPO_UIAD",
+    "targetMappingTitle": "Purchase Requisition"
+  },
+  "ui5AppDetails": {
+    "appId": "zprapp"
+  },
+  "navigation": {
+    "targetMappingId": "UI5R_6108C61A105676995013D029470386FDD335D7BF_TM",
+    "semanticObject": "PurchaseRequisition",
+    "action": "manage",
+    "desktop": true,
+    "tablet": true,
+    "phone": true
+  },
+  "tiles": [
+    {
+      "id": "UI5R_6108C61A105676995013D029470386FDD335D7BF_AL",
+      "tileType": "static",
+      "isDefault": true,
+      "standard": {
+        "title": "Purchase Requisition",
+        "subtitle": "Manage Purchase Requisitions"
+      }
+    }
+  ]
+}

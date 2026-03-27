@@ -9,7 +9,8 @@ lock master
 total etag LocalLastChangedAt
 authorization master ( global )
 etag master ChangedAt
-early numbering
+//early numbering
+late numbering
 {
 
   // ══════════════════════════════════════
@@ -115,7 +116,8 @@ draft table ztpr_item_d
 lock dependent by _Header
 authorization dependent by _Header
 etag master ChangedAt
-early numbering
+//early numbering
+late numbering
 {
 
   // ══════════════════════════════════════

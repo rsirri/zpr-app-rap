@@ -1,3 +1,56 @@
+CLASS lsc_zi_pr_header DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS cleanup_finalize REDEFINITION.
+
+    METHODS adjust_numbers REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zi_pr_header IMPLEMENTATION.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+  METHOD adjust_numbers.
+
+    LOOP AT mapped-prheader ASSIGNING FIELD-SYMBOL(<ls_header>).
+
+      " Get PR number
+      TRY.
+          cl_numberrange_runtime=>number_get(
+            EXPORTING
+              object      = 'ZPR_NUM'
+              nr_range_nr = '01'
+            IMPORTING
+              number      = DATA(lv_pr_number)
+          ).
+        CATCH cx_number_ranges INTO DATA(lx_error).
+
+      ENDTRY.
+
+      <ls_header>-PrNumber = lv_pr_number.
+
+      " Item numbering 10,20,30
+      DATA lv_item TYPE posnr VALUE '000010'.
+
+      LOOP AT mapped-pritem ASSIGNING FIELD-SYMBOL(<ls_item>)
+        WHERE %tmp-PrNumber = <ls_header>-%tmp-PrNumber.
+
+        <ls_item>-PrNumber   = lv_pr_number.
+        <ls_item>-ItemNumber = lv_item.
+
+        lv_item = lv_item + 10.
+
+      ENDLOOP.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
 CLASS lhc_PRHeader DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
@@ -7,11 +60,11 @@ CLASS lhc_PRHeader DEFINITION INHERITING FROM cl_abap_behavior_handler.
     METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
       IMPORTING REQUEST requested_authorizations FOR PRHeader RESULT result.
 
-    METHODS earlynumbering_create FOR NUMBERING
-      IMPORTING entities FOR CREATE PRHeader.
-
-    METHODS earlynumbering_cba_Items FOR NUMBERING
-      IMPORTING entities FOR CREATE PRHeader\_Items.
+*    METHODS earlynumbering_create FOR NUMBERING
+*      IMPORTING entities FOR CREATE PRHeader.
+*
+*    METHODS earlynumbering_cba_Items FOR NUMBERING
+*      IMPORTING entities FOR CREATE PRHeader\_Items.
 
     METHODS approve FOR MODIFY
       IMPORTING keys FOR ACTION PRHeader~approve RESULT result.
@@ -85,86 +138,86 @@ CLASS lhc_PRHeader IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD earlynumbering_create.
-
-    DATA : lV_OBJECT   TYPE if_numberrange_buffer=>nr_object,
-           lV_INTERVAL TYPE if_numberrange_buffer=>nr_interval,
-           lV_QUANTITY TYPE if_numberrange_buffer=>nr_quantity.
-
-    LOOP AT entities INTO DATA(entity).
-
-      " Skip if already assigned
-      IF entity-PrNumber IS NOT INITIAL.
-        APPEND CORRESPONDING #( entity ) TO mapped-prheader.
-        CONTINUE.
-      ENDIF.
-
-*      TRY.
+*  METHOD earlynumbering_create.
 *
-*          cl_numberrange_runtime=>number_get(
-*            EXPORTING
-*              nr_range_nr       = '01'
-*              object            = 'ZPR_NUM'
-*              quantity          = 1
-*            IMPORTING
-*              number            = DATA(lv_number)
-*              returncode        = DATA(lv_subrc)
-*              returned_quantity = DATA(lv_total_quantity)
-*          ).
-*        CATCH cx_nr_object_not_found.
-*        CATCH cx_number_ranges INTO DATA(lr_error).
-      SELECT SINGLE FROM ztpr_header FIELDS MAX( pr_number ) INTO @DATA(lv_pr_number).
-      IF sy-subrc NE 0.
-        lv_pr_number = '4600000000'.
-*        APPEND VALUE #( %cid    = entity-%cid
-*                %msg    = new_message_with_text(
-*                  severity = if_abap_behv_message=>severity-error
-*                  text     = 'Error while reading Number range' )
-*              ) TO reported-prheader.
-      ELSE.
-        IF lv_pr_number IS INITIAL.
-          lv_pr_number = 4600000000.
-        ENDIF.
-        lv_pr_number += 1.
-      ENDIF.
-*      CONTINUE.
-*      ENDTRY.
-
-      APPEND VALUE #( %cid = entity-%cid
-                      %key = VALUE #( PrNumber = lv_pr_number )
-                      %is_draft = entity-%is_draft
-                    ) TO mapped-prheader.
-
-    ENDLOOP.
-
-  ENDMETHOD.
-
-  METHOD earlynumbering_cba_Items.
-
-    LOOP AT entities INTO DATA(entity).
-
-      DATA(lv_item_number) = CONV posnr( 0 ).
-
-      LOOP AT entity-%target INTO DATA(item).
-
-        IF item-ItemNumber IS NOT INITIAL.
-          APPEND CORRESPONDING #( item ) TO mapped-pritem.
-          CONTINUE.
-        ENDIF.
-
-        lv_item_number = lv_item_number + 10.
-
-        APPEND VALUE #( %cid = item-%cid
-                        %key = VALUE #( PrNumber = entity-PrNumber
-                                        ItemNumber = lv_item_number )
-                        %is_draft = entity-%is_draft
-                      ) TO mapped-pritem.
-
-      ENDLOOP.
-
-    ENDLOOP.
-
-  ENDMETHOD.
+*    DATA : lV_OBJECT   TYPE if_numberrange_buffer=>nr_object,
+*           lV_INTERVAL TYPE if_numberrange_buffer=>nr_interval,
+*           lV_QUANTITY TYPE if_numberrange_buffer=>nr_quantity.
+*
+*    LOOP AT entities INTO DATA(entity).
+*
+*      " Skip if already assigned
+*      IF entity-PrNumber IS NOT INITIAL.
+*        APPEND CORRESPONDING #( entity ) TO mapped-prheader.
+*        CONTINUE.
+*      ENDIF.
+*
+**      TRY.
+**
+**          cl_numberrange_runtime=>number_get(
+**            EXPORTING
+**              nr_range_nr       = '01'
+**              object            = 'ZPR_NUM'
+**              quantity          = 1
+**            IMPORTING
+**              number            = DATA(lv_number)
+**              returncode        = DATA(lv_subrc)
+**              returned_quantity = DATA(lv_total_quantity)
+**          ).
+**        CATCH cx_nr_object_not_found.
+**        CATCH cx_number_ranges INTO DATA(lr_error).
+*      SELECT SINGLE FROM ztpr_header FIELDS MAX( pr_number ) INTO @DATA(lv_pr_number).
+*      IF sy-subrc NE 0.
+*        lv_pr_number = '4600000000'.
+**        APPEND VALUE #( %cid    = entity-%cid
+**                %msg    = new_message_with_text(
+**                  severity = if_abap_behv_message=>severity-error
+**                  text     = 'Error while reading Number range' )
+**              ) TO reported-prheader.
+*      ELSE.
+*        IF lv_pr_number IS INITIAL.
+*          lv_pr_number = 4600000000.
+*        ENDIF.
+*        lv_pr_number += 1.
+*      ENDIF.
+**      CONTINUE.
+**      ENDTRY.
+*
+*      APPEND VALUE #( %cid = entity-%cid
+*                      %key = VALUE #( PrNumber = lv_pr_number )
+*                      %is_draft = entity-%is_draft
+*                    ) TO mapped-prheader.
+*
+*    ENDLOOP.
+*
+*  ENDMETHOD.
+*
+*  METHOD earlynumbering_cba_Items.
+*
+*    LOOP AT entities INTO DATA(entity).
+*
+*      DATA(lv_item_number) = CONV posnr( 0 ).
+*
+*      LOOP AT entity-%target INTO DATA(item).
+*
+*        IF item-ItemNumber IS NOT INITIAL.
+*          APPEND CORRESPONDING #( item ) TO mapped-pritem.
+*          CONTINUE.
+*        ENDIF.
+*
+*        lv_item_number = lv_item_number + 10.
+*
+*        APPEND VALUE #( %cid = item-%cid
+*                        %key = VALUE #( PrNumber = entity-PrNumber
+*                                        ItemNumber = lv_item_number )
+*                        %is_draft = entity-%is_draft
+*                      ) TO mapped-pritem.
+*
+*      ENDLOOP.
+*
+*    ENDLOOP.
+*
+*  ENDMETHOD.
 
   METHOD approve.
 

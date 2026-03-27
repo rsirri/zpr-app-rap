@@ -86,65 +86,65 @@ annotate entity ZC_PR_ITEM with
     ]
 
   @UI:{ lineItem: [{ position: 10, importance: #HIGH, label: 'Item No.' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 10, label: 'Item No.' }],
-        identification: [{ position: 10 }]
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 10, label: 'Item No.' }]
+  //        identification: [{ position: 10 }]
       }
   ItemNumber;
 
   @UI:{ lineItem: [{ position: 20, importance: #HIGH, label: 'Material' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 20, label: 'Material' }],
-        identification: [{ position: 20 }]
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 20, label: 'Material' }]
+  //        identification: [{ position: 20 }]
       }
   MaterialNumber;
 
   @UI:{ lineItem: [{ position: 30, importance: #HIGH, label: 'Description' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 30, label: 'Description' }],
-        identification: [{ position: 30 }]
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 30, label: 'Description' }]
+  //        identification: [{ position: 30 }]
       }
   ShortText;
 
   @UI:{ dataPoint:      { qualifier: 'QuantityDP' },
         lineItem: [{ position: 40, importance: #HIGH, label: 'Quantity' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 40, label: 'Quantity' }],
-        identification: [{ position: 40 }]
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 40, label: 'Quantity' }]
+  //        identification: [{ position: 40 }]
       }
   Quantity;
 
   @UI:{ lineItem: [{ position: 50, importance: #MEDIUM, label: 'Unit' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 50, label: 'Unit' }],
-        identification: [{ position: 50 }]
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 50, label: 'Unit' }]
+  //        identification: [{ position: 50 }]
       }
   Unit;
 
   @UI:{ dataPoint:      { qualifier: 'PriceDP' },
         lineItem: [{ position: 60, importance: #HIGH, label: 'Price' }],
-        fieldGroup: [{ qualifier: 'PricingInfo', position: 10, label: 'Price' }],
-        identification: [{ position: 60 }]
+        fieldGroup: [{ qualifier: 'PricingInfo', position: 10, label: 'Price' }]
+  //        identification: [{ position: 60 }]
       }
   Price;
 
   @UI:{ lineItem: [{ position: 70, importance: #MEDIUM, label: 'Currency' }],
-        fieldGroup: [{ qualifier: 'PricingInfo', position: 20, label: 'Currency' }],
-        identification: [{ position: 70 }]
+        fieldGroup: [{ qualifier: 'PricingInfo', position: 20, label: 'Currency' }]
+  //        identification: [{ position: 70 }]
       }
   Currency;
 
   @UI:{ dataPoint:      { qualifier: 'DeliveryDateDP' },
         lineItem:       [{ position:  80, importance: #HIGH, label: 'Delivery Date' }],
-        fieldGroup:     [{ qualifier: 'DeliveryInfo', position:  10, label: 'Delivery Date' }],
-        identification: [{ position: 80 }]
+        fieldGroup:     [{ qualifier: 'DeliveryInfo', position:  10, label: 'Delivery Date' }]
+  //        identification: [{ position: 80 }]
       }
   DeliveryDate;
 
   @UI:{ lineItem:       [{ position:  90, importance: #MEDIUM, label: 'Plant' }],
-        fieldGroup:     [{ qualifier: 'DeliveryInfo', position:  20, label: 'Plant' }],
-        identification: [{ position: 90 }]
+        fieldGroup:     [{ qualifier: 'DeliveryInfo', position:  20, label: 'Plant' }]
+  //        identification: [{ position: 90 }]
       }
   Plant;
 
   @UI:{ lineItem:       [{ position:  100, importance: #MEDIUM, label: 'Vendor' }],
-        fieldGroup:     [{ qualifier: 'DeliveryInfo', position:  30, label: 'Vendor' }],
-        identification: [{ position: 100 }]
+        fieldGroup:     [{ qualifier: 'DeliveryInfo', position:  30, label: 'Vendor' }]
+  //        identification: [{ position: 100 }]
       }
   Vendor;
 
