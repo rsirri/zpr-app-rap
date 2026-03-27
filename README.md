@@ -154,6 +154,8 @@ Senior SAP Technical Consultant · SAP BTP Full-Stack Developer
 💼 GitHub: github.com/rsirri
 Built with Eclipse ADT on SAP BTP ABAP Cloud
 
+## 🚀 Live Demo
+[▶ Open App](https://87073b08-232b-42f9-ae7c-bc59cf2ae025.abap-web.us10.hana.ondemand.com/sap/bc/ui5_ui5/sap/zprapp)
 
 📄 License
 MIT License — free to use as reference or learning material.
