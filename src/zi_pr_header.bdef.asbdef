@@ -1,0 +1,174 @@
+managed implementation in class zbp_i_pr_header unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZI_PR_HEADER alias PRHeader
+persistent table ztpr_header
+draft table ztpr_header_d
+lock master
+total etag LocalLastChangedAt
+authorization master ( global )
+etag master ChangedAt
+early numbering
+{
+
+  // ══════════════════════════════════════
+  // STANDARD OPERATION
+  // ══════════════════════════════════════
+  create ( authorization : global );
+  update ( features : instance );
+  delete ( features : instance );
+
+  association _Items { create; with draft; }
+
+  // ══════════════════════════════════════
+  // FIELD CONTROLS
+  // ══════════════════════════════════════
+  field ( readonly )
+  PrNumber,
+  Status,
+  TotalValue,
+  CreatedBy,
+  CreatedAt,
+  ChangedBy,
+  ChangedAt,
+  LocalLastChangedAt;
+
+  //  field ( readonly : update ) DocType,
+  //  PrDate,
+  //  RequestedBy,
+  //  Department,
+  //  Currency;
+
+  field ( mandatory )
+  DocType,
+  PrDate,
+  RequestedBy,
+  Department,
+  Currency;
+
+  // ══════════════════════════════════════
+  // DRAFT
+  // ══════════════════════════════════════
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare
+  {
+    validation checkMandatoryFields;
+    validation checkItemsExist;
+  }
+
+  // ══════════════════════════════════════
+  // ACTIONS
+  // ══════════════════════════════════════
+  action ( features : instance ) submitForApproval
+    result [1] $self;
+
+  action ( features : instance ) approve
+    result [1] $self;
+
+  action ( features : instance ) reject
+    result [1] $self;
+
+  // ══════════════════════════════════════
+  // VALIDATIONS
+  // ══════════════════════════════════════
+  validation checkMandatoryFields
+  on save { create; update; }
+
+  validation checkItemsExist
+  on save { create; }
+
+  // ══════════════════════════════════════
+  // DETERMINATIONS
+  // ══════════════════════════════════════
+  determination setInitialStatus
+  on modify { create; }
+
+  // ══════════════════════════════════════
+  // MAPPING
+  // ══════════════════════════════════════
+  mapping for ztpr_header corresponding
+    {
+      PrNumber           = pr_number;
+      DocType            = bsart;
+      PrDate             = pr_date;
+      RequestedBy        = requested_by;
+      Department         = department;
+      Status             = status;
+      TotalValue         = total_value;
+      Currency           = currency;
+      CreatedBy          = created_by;
+      CreatedAt          = created_at;
+      ChangedBy          = changed_by;
+      ChangedAt          = changed_at;
+      LocalLastChangedAt = local_last_changed_at;
+    }
+
+}
+
+define behavior for ZI_PR_ITEM alias PRItem
+persistent table ztpr_item
+draft table ztpr_item_d
+lock dependent by _Header
+authorization dependent by _Header
+etag master ChangedAt
+early numbering
+{
+
+  // ══════════════════════════════════════
+  // STANDARD OPERATION
+  // ══════════════════════════════════════
+  update;
+  delete;
+  field ( readonly ) PrNumber, ItemNumber;
+  association _Header { with draft; }
+
+  // ══════════════════════════════════════
+  // FIELD CONTROLS
+  // ══════════════════════════════════════
+  field ( readonly )
+  ChangedAt;
+
+  field ( mandatory )
+  MaterialNumber,
+  Quantity,
+  Unit,
+  Price,
+  Currency,
+  DeliveryDate,
+  Plant;
+
+  // ══════════════════════════════════════
+  // DETERMINATIONS
+  // ══════════════════════════════════════
+  determination calculateTotalValue
+  on modify { create; update; field Quantity, Price; }
+  side effects
+  { field Quantity affects field _Header.TotalValue;
+    field Price affects field _Header.TotalValue;
+  }
+  //  internal action recalculateTotal;
+
+  // ══════════════════════════════════════
+  // MAPPING
+  // ══════════════════════════════════════
+  mapping for ztpr_item corresponding
+    {
+      PrNumber       = pr_number;
+      ItemNumber     = item_number;
+      MaterialNumber = material_number;
+      ShortText      = short_text;
+      Vendor         = vendor;
+      Quantity       = quantity;
+      Unit           = unit;
+      Price          = price;
+      Currency       = currency;
+      DeliveryDate   = delivery_date;
+      Plant          = plant;
+      ChangedAt      = changed_at;
+    }
+
+}

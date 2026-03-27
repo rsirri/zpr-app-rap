@@ -1,0 +1,185 @@
+@Metadata.layer: #CUSTOMER
+@UI.headerInfo: {
+    typeName: 'Purchase Requisition',
+    typeNamePlural: 'Purchase Requisitions',
+    title: {
+        type: #STANDARD,
+        value: 'PrNumber'
+    },
+    description: {
+        type: #STANDARD,
+        criticality: 'StatusCriticality',
+        criticalityRepresentation: #WITH_ICON,
+        value: 'Status'
+    }
+}
+
+@UI.presentationVariant: [{
+  maxItems:  20,
+  sortOrder: [{ by:        'PrDate', direction: #DESC
+            }],
+  requestAtLeast: [ 'StatusCriticality',  'Status',  'TotalValue', 'PrDate' ],
+  visualizations: [
+    { type: #AS_LINEITEM },
+    { type:      #AS_DATAPOINT,
+      qualifier: 'StatusDP' },
+    { type:      #AS_DATAPOINT,
+      qualifier: 'TotalValueDP' },
+    { type:      #AS_DATAPOINT,
+      qualifier: 'PRDateDP' }
+  ]
+}]
+annotate entity ZC_PR_HEADER with
+{
+
+  -- ════════════════════════════════════════
+  -- FACETS — Full Object Page Layout
+  -- ════════════════════════════════════════
+  @UI.facet: [
+
+    // dataPoint KPI strip
+                {
+                    id:              'StatusDPFacet',
+                    purpose:         #HEADER,
+                    type:            #DATAPOINT_REFERENCE,
+                    targetQualifier: 'StatusDP',
+                    position:        10
+                },
+
+                { id:              'TotalValueDPFacet',
+                  purpose:         #HEADER,
+                  type:            #DATAPOINT_REFERENCE,
+                  targetQualifier: 'TotalValueDP',
+                  position:        20
+                },
+
+                { id:              'PRDateDPFacet',
+                  purpose:         #HEADER,
+                  type:            #DATAPOINT_REFERENCE,
+                  targetQualifier: 'PRDateDP',
+                  position:        30
+                },
+
+                { id:              'CurrDPFacet',
+                  purpose:         #HEADER,
+                  type:            #DATAPOINT_REFERENCE,
+                  targetQualifier: 'CurrDP',
+                  position:        40
+                },
+
+    // Header field group
+                { id:              'GeneralInfoFacet',
+                  purpose:         #STANDARD,
+                  type:            #FIELDGROUP_REFERENCE,
+                  targetQualifier: 'GeneralInfo',
+                  label:           'General Information',
+                  position:        10 },
+
+                { id:              'ItemsFacet',
+                  purpose:         #STANDARD,
+                  type:            #LINEITEM_REFERENCE,
+                  targetElement:   '_Items',
+                  label:           'Purchase Requisition Items',
+                  position:        20 },
+
+                { id:              'AdminFacet',
+                  purpose:         #STANDARD,
+                  type:            #FIELDGROUP_REFERENCE,
+                  targetQualifier: 'AdminInfo',
+                  label:           'Administrative Information',
+                  position:        30 },
+
+                { id:              'HeaderInfoFacet',
+                  purpose:         #HEADER,
+                  type:            #FIELDGROUP_REFERENCE,
+                  targetQualifier: 'HeaderInfo',
+                  label:           'Purchase Requisition',
+                  position:        40 }
+
+             ]
+
+  @UI:{   lineItem: [{ position: 10, importance: #HIGH, label: 'PR Number' },
+                     { type: #FOR_ACTION, position: 80, dataAction: 'submitForApproval', label: 'Submit for Approval', importance: #HIGH },
+                     { type: #FOR_ACTION, position: 90, dataAction: 'approve', label: 'Approve', importance: #HIGH },
+                     { type: #FOR_ACTION, position: 100, dataAction: 'reject', label: 'Reject', importance: #HIGH }
+                    ],
+          selectionField: [{ position: 10 }],
+          fieldGroup: [{ qualifier: 'HeaderInfo', position: 10, label: 'PR Number' }],
+          identification: [{ position: 10 },
+                           { type: #FOR_ACTION, position: 10, dataAction: 'submitForApproval', label: 'Submit for Approval' },
+                           { type: #FOR_ACTION, position: 20, dataAction: 'approve', label: 'Approve' },
+                           { type: #FOR_ACTION, position: 30, dataAction: 'reject', label: 'Reject' }
+                          ]
+      }
+  PrNumber;
+
+  @UI:{ lineItem: [{ position: 20, importance: #HIGH, label: 'Document Type' }],
+        selectionField: [{ position: 20 }],
+        fieldGroup: [{ qualifier: 'GeneralInfo', position: 20, label: 'Document Type' }],
+        identification: [{ position: 20 }]
+      }
+  DocType;
+
+  @UI:{ dataPoint: { qualifier: 'PRDateDP' },
+        lineItem: [{ position: 30, importance: #HIGH, label: 'PR Date' }],
+        selectionField: [{ position: 30 }],
+        fieldGroup: [{ qualifier: 'GeneralInfo', position: 30, label: 'PR Date' }],
+        identification: [{ position: 30 }]
+      }
+  PrDate;
+
+  @UI:{ lineItem: [{ position:  40, importance: #HIGH, label: 'Requested By' }],
+        selectionField: [{ position: 40 }],
+        fieldGroup: [{ qualifier: 'GeneralInfo', position:  40, label: 'Requested By' }],
+        identification: [{ position: 40 }]
+  }
+  RequestedBy;
+
+  @UI:{ lineItem: [{ position:  50, importance: #HIGH, label: 'Department' }],
+        selectionField: [{ position: 50 }],
+        fieldGroup: [{ qualifier: 'GeneralInfo', position:  50, label: 'Department' }],
+        identification: [{ position: 50 }]
+  }
+  Department;
+
+  @UI:{ dataPoint: { qualifier: 'StatusDP' },
+        lineItem: [{ position: 60, importance: #HIGH, label: 'Status', criticality: 'StatusCriticality', criticalityRepresentation: #WITH_ICON }],
+        selectionField: [{ position: 60 }],
+        fieldGroup: [{ qualifier: 'HeaderInfo', position: 40, criticality: 'StatusCriticality', criticalityRepresentation: #WITH_ICON }],
+        identification: [{ position: 60, criticality: 'StatusCriticality', criticalityRepresentation: #WITH_ICON }]
+      }
+  Status;
+
+  @UI.hidden: true
+  StatusCriticality;
+
+  @UI:{ dataPoint: { qualifier: 'TotalValueDP' },
+        lineItem: [{ position: 70, importance: #HIGH, label: 'Total Value' }],
+        fieldGroup: [{ qualifier: 'HeaderInfo', position: 50, label: 'Total Value' }],
+        identification: [{ position: 70 }]
+      }
+  TotalValue;
+
+  @UI:{ dataPoint: { qualifier: 'CurrDP' },
+        fieldGroup: [{ qualifier: 'GeneralInfo', position: 60, label: 'Currency' }],
+        identification: [{ position: 80 }]
+      }
+  Currency;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  10, label:     'Created By' }]
+  CreatedBy;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  20, label:     'Created At' }]
+  CreatedAt;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  30, label:     'Changed By' }]
+  ChangedBy;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  40, label:     'Changed At' }]
+  ChangedAt;
+
+  @UI.hidden: true
+  LocalLastChangedAt;
+
+
+}

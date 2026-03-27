@@ -1,0 +1,9 @@
+@EndUserText.label: 'Service Definition for PR Application'
+define service ZSD_PR_APP {
+  expose ZC_PR_HEADER    as PurchaseRequisition;
+  expose ZC_PR_ITEM      as PurchaseRequisitionItem;
+  expose ZVH_PR_DEPT     as DepartmentVH;
+  expose ZVH_PR_MATERIAL as MaterialVH;
+  expose ZVH_PR_PLANT    as PlantVH;
+  expose ZVH_PR_VENDOR   as VendorVH;
+}
