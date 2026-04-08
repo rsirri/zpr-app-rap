@@ -19,7 +19,10 @@ define view entity ZR_PR_HEADER
       status                as Status,
       @Semantics.amount.currencyCode: 'Currency'
       total_value           as TotalValue,
+      @Semantics.amount.currencyCode: 'Currency'
+      budget_target         as BudgetTarget,
       currency              as Currency,
+      priority              as Priority,
       created_by            as CreatedBy,
       created_at            as CreatedAt,
       changed_by            as ChangedBy,

@@ -1,0 +1,4 @@
+@EndUserText.label: 'SD for Material PR'
+define service ZSD_PR_MATERIAL {
+  expose ZC_PR_MATERIAL;
+}

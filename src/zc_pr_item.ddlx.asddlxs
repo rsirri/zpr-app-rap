@@ -77,12 +77,32 @@ annotate entity ZC_PR_ITEM with
         position:        20 },
 
       // ── Delivery section ─────────────────────
+      {
+         id:              'Delivery',
+         purpose:         #STANDARD,
+         type:            #COLLECTION,
+         label:           'Delivery Information',
+         position:        30
+       },
+
       { id:              'DeliveryFacet',
+        parentId:        'Delivery',
         purpose:         #STANDARD,
         type:            #FIELDGROUP_REFERENCE,
         targetQualifier: 'DeliveryInfo',
-        label:           'Delivery Information',
-        position:        30 }
+        label:           'Delivery Info',
+        position:        10 },
+
+      // ── Contact section ─────────────────────
+      { id:              'ContactFacet',
+        parentId:        'Delivery',
+        purpose:         #STANDARD,
+        type:            #FIELDGROUP_REFERENCE,
+        targetQualifier: 'ContactInfo',
+        label:           'Contact Data',
+        position:        20
+      }
+
     ]
 
   @UI:{ lineItem: [{ position: 10, importance: #HIGH, label: 'Item No.' }],
@@ -92,9 +112,12 @@ annotate entity ZC_PR_ITEM with
   ItemNumber;
 
   @UI:{ lineItem: [{ position: 20, importance: #HIGH, label: 'Material' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 20, label: 'Material' }]
+// , type: #WITH_INTENT_BASED_NAVIGATION, semanticObjectAction: 'display', semanticObject: 'ZPRMaterial', semanticObjectBinding: [{ localElement: 'MaterialNumber', element: 'MaterialNumber' }] }],
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 20, label: 'Material' }]//, type: #WITH_INTENT_BASED_NAVIGATION, semanticObjectAction: 'display' }]
   //        identification: [{ position: 20 }]
       }
+  @Consumption.semanticObject: 'ZPRMaterial'
+  @UI.textArrangement: #TEXT_LAST
   MaterialNumber;
 
   @UI:{ lineItem: [{ position: 30, importance: #HIGH, label: 'Description' }],
@@ -104,14 +127,16 @@ annotate entity ZC_PR_ITEM with
   ShortText;
 
   @UI:{ dataPoint:      { qualifier: 'QuantityDP' },
+        connectedFields: [{ qualifier: 'QuantityUnitCF', groupLabel: 'Quantity', name: 'quantity', template: '{quantity} {unit}' }],
         lineItem: [{ position: 40, importance: #HIGH, label: 'Quantity' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 40, label: 'Quantity' }]
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 40, label: 'Quantity', type: #AS_CONNECTED_FIELDS, valueQualifier: 'QuantityUnitCF' }]
   //        identification: [{ position: 40 }]
       }
   Quantity;
 
-  @UI:{ lineItem: [{ position: 50, importance: #MEDIUM, label: 'Unit' }],
-        fieldGroup: [{ qualifier: 'ItemDetail', position: 50, label: 'Unit' }]
+  @UI:{ connectedFields: [{ qualifier: 'QuantityUnitCF', name: 'unit' }],
+        lineItem: [{ position: 50, importance: #MEDIUM, label: 'Unit' }],
+        fieldGroup: [{ qualifier: 'ItemDetail', position: 50, label: 'Unit', hidden: true }]
   //        identification: [{ position: 50 }]
       }
   Unit;
@@ -147,6 +172,22 @@ annotate entity ZC_PR_ITEM with
   //        identification: [{ position: 100 }]
       }
   Vendor;
+
+  @UI: { lineItem: [{ position: 110, importance: #LOW, type: #AS_FIELDGROUP, valueQualifier: 'ContactInfo', label: 'Contact Data' }],
+         fieldGroup: [{ position: 110, qualifier: 'ContactInfo' }],
+         identification: [{ position: 110 }]
+       }
+  PhoneNumber;
+
+  @UI: { fieldGroup: [{ position: 120, qualifier: 'ContactInfo' }],
+         identification: [{ position: 120 }]
+       }
+  EMailAddress;
+
+  @UI:{ fieldGroup: [{ position: 130, qualifier: 'ContactInfo', type: #WITH_URL, value: 'WebAddress', url: 'WebAddress', label: 'Web Site' }],
+         identification: [{ position: 130 }]
+      }
+  WebAddress;
 
   @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  40, label:     'Changed At' }]
   ChangedAt;

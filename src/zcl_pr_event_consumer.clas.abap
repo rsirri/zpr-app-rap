@@ -1,0 +1,16 @@
+CLASS zcl_pr_event_consumer DEFINITION
+    PUBLIC
+  ABSTRACT
+  FINAL
+  FOR EVENTS OF zi_pr_header.
+
+  PUBLIC SECTION.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_pr_event_consumer IMPLEMENTATION.
+ENDCLASS.

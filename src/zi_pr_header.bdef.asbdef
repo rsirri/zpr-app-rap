@@ -2,9 +2,11 @@ managed implementation in class zbp_i_pr_header unique;
 strict ( 2 );
 with draft;
 
+
 define behavior for ZI_PR_HEADER alias PRHeader
 persistent table ztpr_header
 draft table ztpr_header_d
+with additional save
 lock master
 total etag LocalLastChangedAt
 authorization master ( global )
@@ -74,10 +76,19 @@ late numbering
     result [1] $self;
 
   // ══════════════════════════════════════
+  // EVENTS
+  // ══════════════════════════════════════
+  event PRSubmitted parameter ZPR_S_EVENT_PR;
+  event PRApproved parameter ZPR_S_EVENT_PR;
+  event PRRejected parameter ZPR_S_EVENT_PR;
+
+  // ══════════════════════════════════════
   // VALIDATIONS
   // ══════════════════════════════════════
   validation checkMandatoryFields
   on save { create; update; }
+
+  validation checkPrDate on save { create; }
 
   validation checkItemsExist
   on save { create; }
@@ -100,7 +111,9 @@ late numbering
       Department         = department;
       Status             = status;
       TotalValue         = total_value;
+      BudgetTarget       = budget_target;
       Currency           = currency;
+      Priority           = priority;
       CreatedBy          = created_by;
       CreatedAt          = created_at;
       ChangedBy          = changed_by;
@@ -123,8 +136,9 @@ late numbering
   // ══════════════════════════════════════
   // STANDARD OPERATION
   // ══════════════════════════════════════
-  update;
-  delete;
+  update ( features : instance );
+  delete ( features : instance );
+
   field ( readonly ) PrNumber, ItemNumber;
   association _Header { with draft; }
 
@@ -170,6 +184,9 @@ late numbering
       Currency       = currency;
       DeliveryDate   = delivery_date;
       Plant          = plant;
+      PhoneNumber    = phone_number;
+      EMailAddress   = email_address;
+      WebAddress     = web_address;
       ChangedAt      = changed_at;
     }
 

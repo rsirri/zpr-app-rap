@@ -11,18 +11,21 @@
 define view entity ZR_PR_ITEM
   as select from ztpr_item
 {
-  key pr_number             as PrNumber,
-  key item_number           as ItemNumber,
-      material_number       as MaterialNumber,
-      short_text            as ShortText,
-      vendor                as Vendor,
+  key pr_number       as PrNumber,
+  key item_number     as ItemNumber,
+      material_number as MaterialNumber,
+      short_text      as ShortText,
+      vendor          as Vendor,
       @Semantics.quantity.unitOfMeasure: 'Unit'
-      quantity              as Quantity,
-      unit                  as Unit,
+      quantity        as Quantity,
+      unit            as Unit,
       @Semantics.amount.currencyCode: 'Currency'
-      price                 as Price,
-      currency              as Currency,
-      delivery_date         as DeliveryDate,
-      plant                 as Plant,
-      changed_at            as ChangedAt
+      price           as Price,
+      currency        as Currency,
+      delivery_date   as DeliveryDate,
+      plant           as Plant,
+      phone_number    as PhoneNumber,
+      email_address   as EMailAddress,
+      web_address     as WebAddress,
+      changed_at      as ChangedAt
 }

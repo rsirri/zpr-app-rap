@@ -6,15 +6,19 @@ CLASS lsc_zi_pr_header DEFINITION INHERITING FROM cl_abap_behavior_saver.
 
     METHODS adjust_numbers REDEFINITION.
 
+    METHODS save_modified REDEFINITION.
+
 ENDCLASS.
 
 CLASS lsc_zi_pr_header IMPLEMENTATION.
 
   METHOD cleanup_finalize.
+
   ENDMETHOD.
 
   METHOD adjust_numbers.
 
+    " ── New Header + Items (existing logic) ──────────────
     LOOP AT mapped-prheader ASSIGNING FIELD-SYMBOL(<ls_header>).
 
       " Get PR number
@@ -46,6 +50,96 @@ CLASS lsc_zi_pr_header IMPLEMENTATION.
       ENDLOOP.
 
     ENDLOOP.
+
+    " ── New Items on Existing Header ─────────────────────
+    DATA : lt_out_pritem   LIKE mapped-pritem.
+    LOOP AT mapped-pritem USING KEY entity ASSIGNING FIELD-SYMBOL(<ls_new_item>) WHERE PrNumber IS INITIAL AND ItemNumber IS INITIAL.
+
+      CHECK NOT line_exists( mapped-prheader[ %tmp-PrNumber = <ls_new_item>-%tmp-PrNumber ] ).
+
+      SELECT FROM ztpr_item_d
+           FIELDS MAX( itemnumber )
+            WHERE prnumber = @<ls_new_item>-%tmp-PrNumber
+             INTO @DATA(lv_max_item).
+      IF lv_max_item IS INITIAL.
+        SELECT FROM ztpr_item
+             FIELDS MAX( item_number )
+              WHERE pr_number = @<ls_new_item>-%tmp-PrNumber
+               INTO @lv_max_item.
+      ENDIF.
+
+      lv_max_item += 10.
+
+      APPEND VALUE #( %pre-%pid            = <ls_new_item>-%pre-%pid
+                      %pre-%tmp-Prnumber   = <ls_new_item>-%pre-%tmp-PrNumber
+                      %pre-%tmp-ItemNumber = <ls_new_item>-%pre-%tmp-ItemNumber
+                      %key-Prnumber        = <ls_new_item>-%pre-%tmp-PrNumber
+                      %key-ItemNumber      = lv_max_item
+                    ) TO lt_out_pritem.
+
+    ENDLOOP.
+
+    IF lt_out_pritem IS NOT INITIAL.
+      CLEAR mapped-pritem.
+      mapped-pritem   = lt_out_pritem.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD save_modified.
+
+    IF update-prheader IS NOT INITIAL.
+
+
+      READ ENTITIES OF zi_pr_header IN LOCAL MODE
+          ENTITY PRHeader
+              FIELDS ( Status PrNumber RequestedBy Department TotalValue )
+              WITH CORRESPONDING #( update-prheader )
+             RESULT DATA(lt_headers).
+
+      " submitForApproval was called
+      IF line_exists( lt_headers[ Status = 'S' ] ).
+
+        RAISE ENTITY EVENT zi_pr_header~PRSubmitted
+            FROM VALUE #(
+                            FOR submitappr IN update-prheader
+                            WHERE ( Status = 'S' )
+                            ( pr_number    = submitappr-PrNumber
+                              requested_by = submitappr-RequestedBy
+                              department   = submitappr-Department
+                              total_value  = submitappr-TotalValue
+                            )
+                        ).
+
+      ELSEIF line_exists( lt_headers[ Status = 'A' ] ). " For Approve
+
+        RAISE ENTITY EVENT zi_pr_header~PRApproved
+            FROM VALUE #(
+                            FOR submitappr IN update-prheader
+                            WHERE ( Status = 'A' )
+                            ( pr_number    = submitappr-PrNumber
+                              requested_by = submitappr-RequestedBy
+                              department   = submitappr-Department
+                              total_value  = submitappr-TotalValue
+                            )
+                        ).
+
+      ELSEIF line_exists( lt_headers[ Status = 'R' ] ). " for Reject
+
+        RAISE ENTITY EVENT zi_pr_header~PRRejected
+            FROM VALUE #(
+                            FOR submitappr IN update-prheader
+                            WHERE ( Status = 'R' )
+                            ( pr_number    = submitappr-PrNumber
+                              requested_by = submitappr-RequestedBy
+                              department   = submitappr-Department
+                              total_value  = submitappr-TotalValue
+                            )
+                        ).
+
+      ENDIF.
+
+    ENDIF.
 
   ENDMETHOD.
 
@@ -83,6 +177,8 @@ CLASS lhc_PRHeader DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS checkMandatoryFields FOR VALIDATE ON SAVE
       IMPORTING keys FOR PRHeader~checkMandatoryFields.
+    METHODS checkPrDate FOR VALIDATE ON SAVE
+      IMPORTING keys FOR PRHeader~checkPrDate.
 
 ENDCLASS.
 
@@ -223,7 +319,7 @@ CLASS lhc_PRHeader IMPLEMENTATION.
 
     READ ENTITIES OF zi_pr_header IN LOCAL MODE
         ENTITY PRHeader
-          FIELDS ( Status )
+          FIELDS ( Status PrNumber RequestedBy Department TotalValue )
           WITH CORRESPONDING #( keys )
         RESULT DATA(lt_headers)
         FAILED failed.
@@ -269,7 +365,7 @@ CLASS lhc_PRHeader IMPLEMENTATION.
 
     READ ENTITIES OF zi_pr_header IN LOCAL MODE
       ENTITY PRHeader
-        FIELDS ( Status )
+        FIELDS ( Status PrNumber RequestedBy Department TotalValue )
         WITH CORRESPONDING #( keys )
       RESULT DATA(lt_headers)
       FAILED failed.
@@ -315,7 +411,7 @@ CLASS lhc_PRHeader IMPLEMENTATION.
 
     READ ENTITIES OF zi_pr_header IN LOCAL MODE
       ENTITY PRHeader
-        FIELDS ( Status PrNumber )
+        FIELDS ( Status PrNumber RequestedBy Department TotalValue )
         WITH CORRESPONDING #( keys )
       RESULT DATA(lt_headers)
       FAILED failed.
@@ -410,15 +506,6 @@ CLASS lhc_PRHeader IMPLEMENTATION.
 
     LOOP AT lt_headers INTO DATA(ls_header).
 
-      " Business rule — PR Date cannot be in the past
-      IF ls_header-PrDate < cl_abap_context_info=>get_system_date( ).
-        APPEND VALUE #( %tky = ls_header-%tky
-                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                      text     = 'PR Date cannot be in the past' )
-                      ) TO reported-PRHeader.
-        APPEND VALUE #( %tky = ls_header-%tky ) TO failed-PRHeader.
-      ENDIF.
-
 *      " Business rule — Department must exist in dept table
 *      SELECT SINGLE dept_code
 *        FROM ztpr_dept
@@ -438,6 +525,29 @@ CLASS lhc_PRHeader IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD checkPrDate.
+
+    READ ENTITIES OF zi_pr_header IN LOCAL MODE
+  ENTITY PRHeader
+    FIELDS ( PrDate Department )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_headers).
+
+    LOOP AT lt_headers INTO DATA(ls_header).
+
+      " Business rule — PR Date cannot be in the past
+      IF ls_header-PrDate < cl_abap_context_info=>get_system_date( ).
+        APPEND VALUE #( %tky = ls_header-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                      text     = 'PR Date cannot be in the past' )
+                      ) TO reported-PRHeader.
+        APPEND VALUE #( %tky = ls_header-%tky ) TO failed-PRHeader.
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
 ENDCLASS.
 
 CLASS lhc_PRItem DEFINITION INHERITING FROM cl_abap_behavior_handler.
@@ -445,6 +555,9 @@ CLASS lhc_PRItem DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS calculateTotalValue FOR DETERMINE ON MODIFY
       IMPORTING keys FOR PRItem~calculateTotalValue.
+
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR PRItem RESULT result.
 
 ENDCLASS.
 
@@ -487,6 +600,28 @@ CLASS lhc_PRItem IMPLEMENTATION.
 
     ENDLOOP.
 
+
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+
+    READ ENTITIES OF zi_pr_header IN LOCAL MODE
+        ENTITY PRItem BY \_Header
+        FIELDS ( Status )
+        WITH CORRESPONDING #( keys )
+        RESULT DATA(lt_headers).
+
+    result = VALUE #( FOR key IN keys
+                      LET ls_header =  VALUE #( lt_headers[ KEY Entity %key-PrNumber = key-PrNumber ] OPTIONAL )
+                          lv_editable = COND #( WHEN ls_header-Status = 'D'
+                                                THEN if_abap_behv=>fc-o-enabled
+                                                ELSE if_abap_behv=>fc-o-disabled )
+                      IN
+                      ( %tky      = key-%tky
+                        %update   = lv_editable
+                        %delete   = lv_editable
+                      )
+                    ).
 
   ENDMETHOD.
 

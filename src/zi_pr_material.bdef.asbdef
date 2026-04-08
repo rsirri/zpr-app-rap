@@ -1,0 +1,43 @@
+managed implementation in class zbp_i_pr_material unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZI_PR_MATERIAL alias PRMaterial
+persistent table ztpr_material
+draft table ztpr_material_d
+lock master
+total etag ChangedAt
+authorization master ( instance )
+etag master ChangedAt
+{
+
+  create ( authorization : global );
+  update;
+  delete;
+
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+
+  field ( mandatory : create ) MaterialNumber;
+  field ( readonly : update ) MaterialNumber;
+  field ( mandatory ) ShortText, MaterialType, BaseUnit, MatGroup, Active;
+  field ( readonly ) CreatedBy, CreatedAt, ChangedBy, ChangedAt;
+
+  mapping for ztpr_material
+    {
+      MaterialNumber = material_number;
+      ShortText      = short_text;
+      MaterialType   = material_type;
+      BaseUnit       = base_unit;
+      MatGroup       = mat_group;
+      Active         = active;
+      CreatedBy      = created_by;
+      CreatedAt      = created_at;
+      ChangedBy      = changed_by;
+      ChangedAt      = changed_at;
+    }
+
+}

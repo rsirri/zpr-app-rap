@@ -1,0 +1,188 @@
+@Metadata.layer: #CUSTOMER
+@UI.headerInfo: {
+    typeName: 'Material',
+    typeNamePlural: 'Materials',
+    title: {
+        type: #STANDARD,
+        label: 'Material Number',
+        value: 'MaterialNumber'
+    },
+    description: {
+        type: #STANDARD,
+        label: 'Description',
+        value: 'ShortText'
+    },
+    typeImageUrl: 'sap-icon://product'
+}
+@UI.presentationVariant: [{
+  maxItems:  20,
+  sortOrder: [{ by:        'MaterialNumber'
+            }],
+  requestAtLeast: [ 'ActiveCriticality',  'Active', 'MaterialType' ],
+  visualizations: [
+    { type:      #AS_DATAPOINT,
+      qualifier: 'ActDP' },
+    { type:      #AS_DATAPOINT,
+      qualifier: 'TypeDP' }
+  ]
+}]
+@Search.searchable: true
+annotate entity ZC_PR_MATERIAL with
+{
+
+  @UI.facet: [
+                { id: 'idBUnit',
+                  purpose: #HEADER,
+                  type: #FIELDGROUP_REFERENCE, //#DATAPOINT_REFERENCE,
+                  targetQualifier: 'BUnitDP',
+                  position: 10
+                },
+
+  //                { id: 'idMGrp',
+  //                  purpose: #HEADER,
+  //                  type: #DATAPOINT_REFERENCE,
+  //                  targetQualifier: 'MGrpDP',
+  //                  position: 20
+  //                },
+
+                { id: 'idAct',
+                  purpose: #HEADER,
+                  type: #FIELDGROUP_REFERENCE, // #DATAPOINT_REFERENCE,
+                  targetQualifier: 'Status',
+                  label: 'Material Status',
+                  position: 20
+                },
+
+                { id: 'idType',
+                  purpose: #HEADER,
+                  type: #DATAPOINT_REFERENCE,
+                  targetQualifier: 'TypeDP',
+                  label: 'Material Type',
+                  position: 30
+                },
+
+
+                { id: 'idGeneralInfo',
+                  purpose: #STANDARD,
+                  type: #COLLECTION,
+                  position: 10,
+                  label: 'General Info'
+
+                },
+
+                { id: 'idBasicData',
+                  parentId: 'idGeneralInfo',
+                  purpose: #STANDARD,
+                  type: #FIELDGROUP_REFERENCE,
+                  targetQualifier: 'BasicData',
+                  label: 'Material',
+                  position: 10
+                },
+
+                { id: 'idClassification',
+                  parentId: 'idGeneralInfo',
+                  purpose: #STANDARD,
+                  type: #FIELDGROUP_REFERENCE,
+                  targetQualifier: 'Classification',
+                  label: 'Classification',
+                  position: 20
+                },
+
+                { id: 'idStatus',
+                  parentId: 'idGeneralInfo',
+                  purpose: #STANDARD,
+                  type: #FIELDGROUP_REFERENCE,
+                  targetQualifier: 'Status',
+                  label: 'Status',
+                  position: 30
+                },
+
+                { id:              'AdminFacet',
+                  purpose:         #STANDARD,
+                  type:            #FIELDGROUP_REFERENCE,
+                  targetQualifier: 'AdminInfo',
+                  label:           'Administrative Information',
+                  position:        20
+                }
+            ]
+
+  @UI:{
+          lineItem: [{ position: 10, importance: #HIGH, label: 'Material Number' }],
+          selectionField: [{ position: 10 }],
+  //          identification: [{ position: 10 }],
+            fieldGroup: [{ qualifier: 'BasicData', position: 10, label: 'Material Number' }
+                        ]
+      }
+  @Search.defaultSearchElement: true
+  MaterialNumber;
+
+  @UI:{
+          lineItem: [{ position: 20, importance: #HIGH, label: 'Material short text' }],
+  //          identification: [{ position: 20 }],
+            fieldGroup: [{ qualifier: 'BasicData', position: 20, label: 'Short Text' }
+                        ]
+      }
+  @Search.defaultSearchElement: true
+  @Search.fuzzinessThreshold: 0.7
+  ShortText;
+
+  @UI:{   dataPoint: { qualifier: 'TypeDP' },
+          lineItem: [{ position: 30, importance: #HIGH, label: 'Material Type' }],
+  //          identification: [{ position: 30 }]
+          fieldGroup: [{ qualifier: 'Classification', position: 10, label: 'Material Type' }
+                      ]
+      }
+  @Search.defaultSearchElement: true
+  @UI.textArrangement: #TEXT_FIRST
+  MaterialType;
+
+  @UI:{
+          lineItem: [{ position: 40, importance: #HIGH, label: 'Base Unit' }],
+  //          identification: [{ position: 40 }]
+          fieldGroup: [{ qualifier: 'Classification', position: 30, label: 'Base Unit' },
+                       { qualifier: 'BUnitDP', position: 10, label: 'Base Unit' }
+                       ]
+  //            dataPoint: { qualifier: 'BUnitDP' }
+      }
+  @Consumption.valueHelpDefinition: [{ entity: {
+                                           name: 'I_UnitOfMeasure',
+                                           element: 'UnitOfMeasure'
+                                       } }]
+  BaseUnit;
+
+  @UI:{
+          lineItem: [{ position: 50, importance: #HIGH, label: 'Material Group' }],
+  //          identification: [{ position: 50 }]
+          fieldGroup: [{ qualifier: 'Classification', position: 20, label: 'Material Group' },
+                       { qualifier: 'BUnitDP', position: 20, label: 'Material Group' }
+                      ]
+  //            dataPoint: { qualifier: 'MGrpDP' }
+      }
+  @Search.defaultSearchElement: true
+  MatGroup;
+
+  @UI:{   //dataPoint: { qualifier: 'ActDP', title: 'Active', criticality: 'ActiveCriticality', criticalityRepresentation: #WITH_ICON },
+          lineItem: [{ position: 60, importance: #HIGH, label: 'Material Active', criticality: 'ActiveCriticality', criticalityRepresentation: #WITH_ICON }],
+  //          identification: [{ position: 60 }]
+          fieldGroup: [{ qualifier: 'Status', position: 10, label: 'Active', criticality: 'ActiveCriticality', criticalityRepresentation: #WITH_ICON }
+                      ]
+      }
+  @Search.defaultSearchElement: true
+  Active;
+
+  @UI.hidden: true
+  ActiveCriticality;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  10, label:     'Created By' }]
+  CreatedBy;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  20, label:     'Created At' }]
+  CreatedAt;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  30, label:     'Changed By' }]
+  ChangedBy;
+
+  @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  40, label:     'Changed At' }]
+  ChangedAt;
+
+}

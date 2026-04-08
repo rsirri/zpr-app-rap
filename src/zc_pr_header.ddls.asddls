@@ -27,14 +27,25 @@ define root view entity ZC_PR_HEADER
       Status,
       @UI.hidden: true
       StatusCriticality,
+      
+      ApprovalProgress,
 
       @Semantics.amount.currencyCode: 'Currency'
       TotalValue,
-
+//      @Semantics.amount.currencyCode: 'Currency'
+      TotalValueChart,
+      @Semantics.amount.currencyCode: 'Currency'
+      BudgetTarget,
+      @UI.hidden: true
+      BudgetCriticality,
+    
       @Consumption.valueHelpDefinition: [{
       entity: { name: 'I_CurrencyStdVH', element: 'Currency' }
       }]
       Currency,
+      
+      Priority,
+      
       CreatedBy,
       CreatedAt,
       ChangedBy,

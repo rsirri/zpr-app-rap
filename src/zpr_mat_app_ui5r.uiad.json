@@ -1,0 +1,34 @@
+{
+  "formatVersion": "2",
+  "header": {
+    "description": "PR Material Master App",
+    "originalLanguage": "en",
+    "abapLanguageVersion": "cloudDevelopment"
+  },
+  "generalInformation": {
+    "appType": "ui5",
+    "catalogId": "SAP_TC_UI5_REPO_UIAD",
+    "targetMappingTitle": "Material"
+  },
+  "ui5AppDetails": {
+    "appId": "zpr.material"
+  },
+  "navigation": {
+    "targetMappingId": "UI5R_6FD373A05226AE70C971493448062D1135061444_TM",
+    "semanticObject": "ZPRMaterial",
+    "action": "display",
+    "desktop": true,
+    "tablet": true,
+    "phone": true
+  },
+  "tiles": [
+    {
+      "id": "UI5R_6FD373A05226AE70C971493448062D1135061444_AL",
+      "tileType": "static",
+      "isDefault": true,
+      "standard": {
+        "title": "Material"
+      }
+    }
+  ]
+}

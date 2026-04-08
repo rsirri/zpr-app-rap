@@ -10,15 +10,17 @@
         type: #STANDARD,
         criticality: 'StatusCriticality',
         criticalityRepresentation: #WITH_ICON,
-        value: 'Status'
+        value: 'DocType'
     }
 }
 
 @UI.presentationVariant: [{
+  qualifier: 'pVariant',
+  groupBy: [ 'Status' ],
   maxItems:  20,
   sortOrder: [{ by:        'PrDate', direction: #DESC
             }],
-  requestAtLeast: [ 'StatusCriticality',  'Status',  'TotalValue', 'PrDate' ],
+  requestAtLeast: [ 'StatusCriticality',  'Status',  'TotalValue', 'PrDate', 'ApprovalProgress', 'Priority', 'TotalValueChart', 'BudgetTarget' ],
   visualizations: [
     { type: #AS_LINEITEM },
     { type:      #AS_DATAPOINT,
@@ -27,7 +29,37 @@
       qualifier: 'TotalValueDP' },
     { type:      #AS_DATAPOINT,
       qualifier: 'PRDateDP' }
+//    { type:      #AS_DATAPOINT,
+//      qualifier: 'ApprPrgsDP' }
   ]
+}]
+
+@UI.selectionVariant: [{ qualifier: 'DraftSubmitted', text: 'Active', filter: 'Status EQ D OR Status EQ S' },
+                       { qualifier: 'Draft', text: 'My Drafts', filter: 'Status EQ D' },
+                       { qualifier: 'Submitted', text: 'Submitted', filter: 'Status EQ S' },
+                       { qualifier: 'Approved', text: 'Approved', filter: 'Status EQ A' },
+                       { qualifier: 'Rejected', text: 'Rejected', filter: 'Status EQ R' }
+                      ]
+
+@UI.selectionPresentationVariant: [{
+                                        presentationVariantQualifier: 'pVariant',
+                                        selectionVariantQualifier: 'DraftSubmitted'
+                                   }
+                                  ]
+
+@UI.chart: [
+                {
+                    qualifier:   'radialChart',
+                    title:       'Budget Usage',
+                    description: 'Total Values vs Budget',
+                    chartType:   #DONUT,
+                    measures: [ 'TotalValueChart' ],
+                    measureAttributes: [{ measure: 'TotalValueChart', role: #AXIS_1, asDataPoint: true }]
+                }
+           ]
+@UI.lineItem: [{
+    qualifier: '',
+    criticality: 'StatusCriticality'
 }]
 annotate entity ZC_PR_HEADER with
 {
@@ -65,6 +97,28 @@ annotate entity ZC_PR_HEADER with
                   type:            #DATAPOINT_REFERENCE,
                   targetQualifier: 'CurrDP',
                   position:        40
+                },
+
+                { id:              'AprPrgsFacet',
+                  purpose:         #HEADER,
+                  type:            #DATAPOINT_REFERENCE,
+                  targetQualifier: 'ApprovalProgress',
+                  position:        50
+                },
+
+                { id:              'PriorityFacet',
+                  purpose:         #HEADER,
+                  type:            #DATAPOINT_REFERENCE,
+                  targetQualifier: 'Priority',
+                  position:        60
+                },
+
+    // Cart Annotation
+                { id:              'RadialChartFacet',
+                  purpose:         #HEADER,
+                  type:            #CHART_REFERENCE,
+                  targetQualifier: 'radialChart',
+                  position:        70
                 },
 
     // Header field group
@@ -106,9 +160,9 @@ annotate entity ZC_PR_HEADER with
           selectionField: [{ position: 10 }],
           fieldGroup: [{ qualifier: 'HeaderInfo', position: 10, label: 'PR Number' }],
           identification: [{ position: 10 },
-                           { type: #FOR_ACTION, position: 10, dataAction: 'submitForApproval', label: 'Submit for Approval' },
-                           { type: #FOR_ACTION, position: 20, dataAction: 'approve', label: 'Approve' },
-                           { type: #FOR_ACTION, position: 30, dataAction: 'reject', label: 'Reject' }
+                           { type: #FOR_ACTION, position: 10, dataAction: 'submitForApproval', label: 'Submit for Approval', determining: true, emphasized:true },
+                           { type: #FOR_ACTION, position: 20, dataAction: 'approve', label: 'Approve', determining: true },
+                           { type: #FOR_ACTION, position: 30, dataAction: 'reject', label: 'Reject', determining: true }
                           ]
       }
   PrNumber;
@@ -153,18 +207,76 @@ annotate entity ZC_PR_HEADER with
   @UI.hidden: true
   StatusCriticality;
 
-  @UI:{ dataPoint: { qualifier: 'TotalValueDP' },
-        lineItem: [{ position: 70, importance: #HIGH, label: 'Total Value' }],
+
+  @UI:{ dataPoint: { qualifier: 'TotalValueDP', targetValueElement: 'BudgetTarget', criticality: 'BudgetCriticality' },
+        lineItem: [{ position: 70, importance: #HIGH, label: 'Total Value', criticality: 'BudgetCriticality', criticalityRepresentation: #WITHOUT_ICON }
+  //                     { type: #AS_CHART, valueQualifier: 'radialChart', label: 'Budget Usage', importance: #MEDIUM, position: 125 }
+                  ],
         fieldGroup: [{ qualifier: 'HeaderInfo', position: 50, label: 'Total Value' }],
         identification: [{ position: 70 }]
       }
   TotalValue;
+
+  @UI: {
+               dataPoint: { qualifier: 'TotalValueChart', targetValue: 100, criticalityCalculation: {
+                                                                                            improvementDirection: #MINIMIZE,
+  //                                                                                              acceptanceRangeLowValue: 0,
+  //                                                                                              acceptanceRangeHighValue: 50,
+  //                                                                                              toleranceRangeLowValue: 50,
+  //                                                                                              toleranceRangeLowValueElement: 'BudgetTarget',
+                                                                                              toleranceRangeHighValue: 50,
+  //                                                                                            toleranceRangeHighValueElement: 'BudgetTarget',
+  //                                                                                              deviationRangeLowValue: 80,
+  //                                                                                              deviationRangeLowValueElement: 'BudgetTarget',
+                                                                                              deviationRangeHighValue: 80
+  //                                                                                            deviationRangeHighValueElement: 'BudgetTarget'
+  //                                                                                            constantThresholds: [{
+  //                                                                                                aggregationLevel: [ '' ],
+  //                                                                                                acceptanceRangeLowValue: ,
+  //                                                                                                acceptanceRangeHighValue: ,
+  //                                                                                                toleranceRangeLowValue: ,
+  //                                                                                                toleranceRangeHighValue: ,
+  //                                                                                                deviationRangeLowValue: ,
+  //                                                                                                deviationRangeHighValue:
+  //                                                                                            }]
+                                                                                        } },
+                lineItem: [{ type: #AS_CHART, valueQualifier: 'radialChart', label: 'Budget Usage', importance: #MEDIUM, position: 125 }]
+      }
+  TotalValueChart;
+
+  @UI:{
+        fieldGroup: [{ qualifier: 'GeneralInfo', position: 85, label: 'Budget Value' }]
+      }
+  BudgetTarget;
+
+  @UI.hidden: true
+  BudgetCriticality;
 
   @UI:{ dataPoint: { qualifier: 'CurrDP' },
         fieldGroup: [{ qualifier: 'GeneralInfo', position: 60, label: 'Currency' }],
         identification: [{ position: 80 }]
       }
   Currency;
+
+  @UI:{ dataPoint:{ qualifier: 'Priority',
+                    targetValue: 5,
+                    visualization: #RATING,
+                    title: 'Priority'
+                  },
+        lineItem: [{ type: #AS_DATAPOINT, label: 'Priority', importance: #MEDIUM, position: 115 }],
+        fieldGroup: [{ qualifier: 'GeneralInfo', position: 70, label: 'Priority' }]
+      }
+  Priority;
+
+  @UI:{ dataPoint: { qualifier:     'ApprovalProgress',
+                     targetValue:   100,
+                     visualization: #PROGRESS,
+                     criticality:   'StatusCriticality',
+                     title:         'Approval Progress'
+                   },
+        lineItem: [{ type: #AS_DATAPOINT, label: 'Approval Progress', importance: #MEDIUM, position: 120 }]
+      }
+  ApprovalProgress;
 
   @UI.fieldGroup:     [{ qualifier: 'AdminInfo', position:  10, label:     'Created By' }]
   CreatedBy;
