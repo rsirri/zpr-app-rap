@@ -114,6 +114,7 @@ late numbering
       BudgetTarget       = budget_target;
       Currency           = currency;
       Priority           = priority;
+      HeaderNote         = header_note;
       CreatedBy          = created_by;
       CreatedAt          = created_at;
       ChangedBy          = changed_by;

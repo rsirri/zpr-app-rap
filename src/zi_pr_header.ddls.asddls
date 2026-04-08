@@ -61,6 +61,7 @@ define root view entity ZI_PR_HEADER
       Currency,
 
       Priority,
+      HeaderNote,
 
       @Semantics.user.createdBy: true
       CreatedBy,

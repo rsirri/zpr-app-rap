@@ -45,6 +45,7 @@ define root view entity ZC_PR_HEADER
       Currency,
       
       Priority,
+      HeaderNote,
       
       CreatedBy,
       CreatedAt,

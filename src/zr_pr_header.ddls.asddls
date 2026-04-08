@@ -23,6 +23,7 @@ define view entity ZR_PR_HEADER
       budget_target         as BudgetTarget,
       currency              as Currency,
       priority              as Priority,
+      header_note           as HeaderNote,
       created_by            as CreatedBy,
       created_at            as CreatedAt,
       changed_by            as ChangedBy,
